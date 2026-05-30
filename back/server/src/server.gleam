@@ -7,6 +7,9 @@ import mist
 import wisp
 import wisp/wisp_mist
 
+@external(erlang, "logger_ffi", "add_file_handler")
+fn add_file_handler(filename: String) -> Nil
+
 pub type HubMessage {
   AddClient(id: String, subject: process.Subject(String))
   RemoveClient(id: String)
@@ -22,6 +25,7 @@ fn hub_loop(clients: dict.Dict(String, process.Subject(String)), message: HubMes
       actor.continue(dict.delete(clients, id))
     }
     Broadcast(id, text) -> {
+      wisp.log_info("Message broadcasted from " <> id)
       let msg = id <> ": " <> text
       dict.each(clients, fn(_id, subject) {
         process.send(subject, msg)
@@ -33,6 +37,7 @@ fn hub_loop(clients: dict.Dict(String, process.Subject(String)), message: HubMes
 
 pub fn main() {
   wisp.configure_logger()
+  add_file_handler("server.log")
   let secret_key_base = wisp.random_string(64)
 
   let assert Ok(actor.Started(_pid, hub_subject)) = 
@@ -47,7 +52,9 @@ pub fn main() {
           request: req,
           on_init: fn(_conn) {
             let client_id = "User-" <> wisp.random_string(6)
-            
+           
+            wisp.log_info("New client connected: " <> client_id)
+
             let client_subject = process.new_subject()
             let selector = 
               process.new_selector()
