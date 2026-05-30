@@ -1,15 +1,39 @@
-<!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
+<script>
+  import { onMount, onDestroy } from 'svelte';
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-5">
-		<h1 class="h1">Let's get cracking bones!</h1>
-		<p>Start by exploring:</p>
-		<ul>
-			<li><code class="code">/src/routes/+layout.svelte</code> - barebones layout</li>
-			<li><code class="code">/src/app.postcss</code> - app wide css</li>
-			<li>
-				<code class="code">/src/routes/+page.svelte</code> - this page, you can replace the contents
-			</li>
-		</ul>
-	</div>
+  let messages = [];
+  let inputMessage = "";
+  let ws;
+
+  onMount(() => {
+    // 1. GleamのサーバーにWebSocket接続（裏側でGETリクエストが飛ぶ）
+    ws = new WebSocket("ws://localhost:8000/chat");
+
+    // 2. Gleamからメッセージが送られてきた時の処理
+    ws.onmessage = (event) => {
+      messages = [...messages, event.data];
+    };
+  });
+
+  onDestroy(() => {
+    if (ws) ws.close();
+  });
+
+  function sendMessage() {
+    if (ws && inputMessage) {
+      ws.send(inputMessage); // Gleamへ送信
+      inputMessage = "";
+    }
+  }
+</script>
+
+<div class="chat-container">
+  <div class="messages">
+    {#each messages as msg}
+      <p>{msg}</p>
+    {/each}
+  </div>
+  
+  <input type="text" style="color: black;"  bind:value={inputMessage} placeholder="メッセージを入力..." />
+  <button on:click={sendMessage}>送信</button>
 </div>
