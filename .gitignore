@@ -1,0 +1,16 @@
+# Nix / direnv
+.direnv/
+
+.env
+.env.*
+!.env.example
+
+# データベース・ログファイル
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# OSのシステムファイル
+.DS_Store
+Thumbs.db
