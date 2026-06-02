@@ -25,9 +25,11 @@
               gleam       # Gleamコンパイラ
               erlang_27   # Gleamが裏で動くためのErlang VM
               rebar3      # Erlang系の依存解決ビルドツール（Gleamが内部で呼び出します）
+              go
 
               # --- Frontend (SvelteKit) ---
               nodejs_22   # Node.js環境
+              pnpm
               # pnpm や yarn を使っている場合はここに追加（例: nodePackages.pnpm）
             ];
 
@@ -36,8 +38,10 @@
               echo "========================================="
               echo " ⚡ sveam-chat Nix Environment Active"
               echo "========================================="
-              echo "🟢 $(gleam --version)"
-              echo "🟢 Node.js $(node --version)"
+              echo "🟢 Gleam : $(gleam --version)"
+              echo "🟢 Node  : $(node --version)"
+              echo "🟢 pnpm  : $(pnpm --version)"
+              echo "🟢 Go    : $(go version)"
               echo "========================================="
             '';
           };
