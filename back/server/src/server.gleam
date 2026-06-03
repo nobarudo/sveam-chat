@@ -1,11 +1,16 @@
 import gleam/dict
 import gleam/erlang/process
-import gleam/http/request
 import gleam/option.{Some, None}
 import gleam/otp/actor
 import mist
 import wisp
 import wisp/wisp_mist
+import gleam/io
+import gleam/int
+import gleam/http/request
+import gleam/json
+import gleam/http
+import gleam/httpc
 
 @external(erlang, "logger_ffi", "add_file_handler")
 fn add_file_handler(filename: String) -> Nil
@@ -86,6 +91,28 @@ fn handle_ws_message(state: #(String, process.Subject(HubMessage)), message, con
 
   case message {
     mist.Text(text) -> {
+      let body = 
+        json.object([
+          #("client_id", json.string(client_id)),
+          #("message", json.string(text)),
+        ])
+        |> json.to_string
+
+      // 2. POSTリクエストの構築 (URLをGo側のAPIエンドポイントに合わせます)
+      let assert Ok(req) = request.to("http://localhost:8080/")
+      let req = 
+        req
+        |> request.set_method(http.Post)
+        |> request.set_body(body)
+        |> request.set_header("content-type", "application/json")
+
+      // 3. 送信
+      let assert Ok(resp) = httpc.send(req)
+
+      io.println("✅ POST送信完了！")
+      io.println("ステータスコード: " <> int.to_string(resp.status))
+      io.println("レスポンスボディ: " <> resp.body)
+
       process.send(hub_subject, Broadcast(client_id, text))
       mist.continue(state)
     }
