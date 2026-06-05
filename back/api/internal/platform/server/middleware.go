@@ -14,9 +14,10 @@ import (
 	"svem-chat-api/internal/platform/config"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func Start() {
+func Start(db *gorm.DB) {
 	logFile, err := os.OpenFile("hemochart.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		panic("ログファイルのオープンに失敗しました: " + err.Error())
@@ -41,7 +42,7 @@ func Start() {
 		Handler: router,
 	}
 
-	routing(router)
+	routing(router, db)
 
 	go func() {
 		slog.Info("サーバーを起動します", slog.String("port", conf.Port))
